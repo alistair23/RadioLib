@@ -52,8 +52,7 @@ int16_t SX126x::begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength, flo
   RADIOLIB_ASSERT(state);
 
   // set mode to standby
-  state = standby();
-  RADIOLIB_ASSERT(state);
+  standby();
 
   // set TCXO control, if requested
   if(!this->XTAL && tcxoVoltage > 0.0) {
@@ -473,7 +472,7 @@ int16_t SX126x::standby(uint8_t mode, bool wakeup) {
   }
 
   uint8_t data[] = { mode };
-  return(this->mod->SPIwriteStream(RADIOLIB_SX126X_CMD_SET_STANDBY, data, 1));
+  return(this->mod->SPIwriteStream(RADIOLIB_SX126X_CMD_SET_STANDBY, data, 1, true, false));
 }
 
 void SX126x::setDio1Action(void (*func)(void)) {
