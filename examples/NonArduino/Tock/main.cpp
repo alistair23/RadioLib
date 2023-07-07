@@ -30,9 +30,19 @@
 // include the hardware abstraction layer
 #include "libtockHal.h"
 
+// Include some libtock-c helpers
+#include <libtock/temperature.h>
+#include <libtock/humidity.h>
+
+#define BUFFER_LEN 64
+
 // the entry point for the program
 int main(void) {
-  printf("[SX1261] Initialising Radio ... \r\n");
+  char transmit_string[BUFFER_LEN];
+  int temp = 0;
+  unsigned humi = 0;
+
+  printf("[SX1261] Initialising Radio ... \n");
 
   // create a new instance of the HAL class
   TockHal* hal = new TockHal();
@@ -58,11 +68,19 @@ int main(void) {
 
   // loop forever
   for(;;) {
+    // Ensure there are no pending callbacks
     yield_no_wait();
-    // send a packet
-    printf("[SX1261] Transmitting '%s' \r\n", transmit_string);
 
-    state = radio->transmit("Hello World!");
+    // Read some sensor data from the board
+    temperature_read_sync(&temp);
+    humidity_read_sync(&humi);
+
+    snprintf(transmit_string, BUFFER_LEN, "Temp: %d, Hum: %u", temp, humi);
+
+    // send a packet
+    printf("[SX1261] Transmitting '%s' \n", transmit_string);
+
+    state = radio->transmit(transmit_string);
 
     if(state == RADIOLIB_ERR_NONE) {
       // the packet was successfully transmitted
