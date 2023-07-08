@@ -36,11 +36,12 @@
 
 #define BUFFER_LEN 64
 
+// Define if we should send or receieve data
+#define SEND
+
 // the entry point for the program
 int main(void) {
-  char transmit_string[BUFFER_LEN];
-  int temp = 0;
-  unsigned humi = 0;
+  char buffer[BUFFER_LEN];
 
   printf("[SX1261] Initialising Radio ... \n");
 
@@ -66,6 +67,10 @@ int main(void) {
   }
   printf("success!\r\n");
 
+#ifdef SEND
+  int temp = 0;
+  unsigned humi = 0;
+
   // loop forever
   for(;;) {
     // Ensure there are no pending callbacks
@@ -75,12 +80,12 @@ int main(void) {
     temperature_read_sync(&temp);
     humidity_read_sync(&humi);
 
-    snprintf(transmit_string, BUFFER_LEN, "Temp: %d, Hum: %u", temp, humi);
+    snprintf(buffer, BUFFER_LEN, "Temp: %d, Hum: %u", temp, humi);
 
     // send a packet
-    printf("[SX1261] Transmitting '%s' \n", transmit_string);
+    printf("[SX1261] Transmitting '%s' \r\n", buffer);
 
-    state = radio->transmit(transmit_string);
+    state = radio->transmit(buffer);
 
     if(state == RADIOLIB_ERR_NONE) {
       // the packet was successfully transmitted
@@ -91,8 +96,28 @@ int main(void) {
     } else {
       printf("failed, code %d\r\n", state);
     }
-
   }
+#else /* SEND */
+  printf("[SX1261] Receiving...\r\n");
+
+  // loop forever
+  for(;;) {
+    // Ensure there are no pending callbacks
+    yield_no_wait();
+
+    state = radio->receive((uint8_t*)buffer, BUFFER_LEN);
+
+    if(state == RADIOLIB_ERR_NONE) {
+      // the packet was successfully transmitted
+      printf("success!: %s\r\n", buffer);
+
+      // wait for a second before transmitting again
+      hal->delay(1000);
+    } else {
+      printf("failed, code %d\r\n", state);
+    }
+  }
+#endif
 
   return 0;
 }
