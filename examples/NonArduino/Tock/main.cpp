@@ -37,7 +37,7 @@
 #define BUFFER_LEN 64
 
 // Define if we should send or receieve data
-#define SEND
+// #define SEND
 
 // the entry point for the program
 int main(void) {
@@ -58,8 +58,7 @@ int main(void) {
   SX1262* radio = new SX1262(tock_module);
 
   // Setup the radio
-  // The settings here work for the SparkFun LoRa Thing Plus - expLoRaBLE
-  int state = radio->begin(915.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 10, 8, 0, false);
+  int state = radio->begin(915.0, 125.0, 7, 5, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 0, 8, 1.7, true);
 
   if (state != RADIOLIB_ERR_NONE) {
     printf("failed, code %d\r\n", state);
@@ -114,7 +113,7 @@ int main(void) {
       // wait for a second before transmitting again
       hal->delay(1000);
     } else {
-      printf("failed, code %d\r\n", state);
+      // printf("failed, code %d\r\n", state);
     }
   }
 #endif
